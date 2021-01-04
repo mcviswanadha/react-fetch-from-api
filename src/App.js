@@ -1,28 +1,37 @@
-import React, { useState, useEffect } from "react";
-import "./style.css";
+import React, {useEffect, useState} from 'react';
+import axios from "axios";
+import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table'
+const USER_SERVICE_URL = 'https://jsonplaceholder.typicode.com/users';
 
-const useFetch = url => {
-  const [data, setData] = useState(null);
-
-  useEffect(async () => {
-    const response = await fetch(url);
-    const data = await response.json();
-    const [item] = data.results;
-    setData(item);
-  }, []);
-
-  return { data };
-};
-
-export default function App() {
-  const [count, setCount] = useState(0);
-  const {data} = useFetch("https://api.randomuser.me/");
-
-  return (
-    <div>
-      <p>your clicked {count} times</p>
-      <button onClick={() => setCount(count + 1)}> Click Me</button>
-      {data && <div>{data.name.first}</div>}
-    </div>
-  );
+function rowClassNameFormat(row, rowIdx) {
+    return rowIdx % 2 === 0 ? 'Gold-Row' : 'Silver-Row';
 }
+
+function UserTableReactHooks() {
+    const [data, setData] = useState({users: [], isFetching: false});
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                setData({users: data.users, isFetching: true});
+                const response = await axios.get(USER_SERVICE_URL);
+                setData({users: response.data, isFetching: false});
+            } catch (e) {
+                console.log(e);
+                setData({users: data.users, isFetching: false});
+            }
+        };
+        fetchUsers();
+    }, []);
+
+    return (
+      <>
+          <BootstrapTable data={data.users} 
+                            trClassName={rowClassNameFormat}>
+                <TableHeaderColumn isKey dataField='id' />               
+                <TableHeaderColumn dataField='name' />
+                <TableHeaderColumn dataField='username' />
+            </BootstrapTable>
+      </>)
+}
+export default UserTableReactHooks
